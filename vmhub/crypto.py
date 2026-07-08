@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from quickjs import Context
 
@@ -6,7 +7,7 @@ from quickjs import Context
 class SJCL:
     """Thin wrapper around the firmware's embedded SJCL implementation."""
 
-    _context: Context | None = None
+    _context: Optional[Context] = None
 
     @classmethod
     def _load_context(cls) -> Context:

@@ -12,6 +12,42 @@ The long-term aim is to support both monitoring and administration of the router
 
 ---
 
+## Setup on a fresh server
+
+Clone the repository and create a virtual environment:
+
+```bash
+git clone <repo-url>
+cd VM-HitronBusinessHub
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+If you prefer the modern packaging flow, you can also install the project in editable mode:
+
+```bash
+pip install -e .
+```
+
+To run the sample login example:
+
+```bash
+python examples/login.py --host 192.168.0.1 --username admin --password 'your-password'
+```
+
+You can also provide the credentials through environment variables:
+
+```bash
+export VMHUB_HOST=192.168.0.1
+export VMHUB_USERNAME=admin
+export VMHUB_PASSWORD='your-password'
+python examples/login.py
+```
+
+---
+
 ## Project Goals
 
 * Native Python implementation
@@ -253,8 +289,8 @@ These files are **not** modified or redistributed as part of the Python library 
 
 ## Requirements
 
-* Python 3.12+
-* requests
+* Python 3.8+
+* requests 2.31.x (newer releases require newer Python versions)
 * quickjs
 
 ---
