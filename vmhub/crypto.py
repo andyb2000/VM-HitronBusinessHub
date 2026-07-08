@@ -3,7 +3,7 @@ import json
 import os
 
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
@@ -27,8 +27,13 @@ class SJCL:
         )
         derived_key = kdf.derive(key.encode("utf-8"))
 
-        aesgcm = AESGCM(derived_key)
-        ciphertext = aesgcm.encrypt(iv, plaintext.encode("utf-8"), adata)
+        encryptor = Cipher(
+            algorithms.AES(derived_key),
+            modes.GCM(iv, min_tag_length=8),
+        ).encryptor()
+        encryptor.authenticate_additional_data(adata)
+        ciphertext = encryptor.update(plaintext.encode("utf-8")) + encryptor.finalize()
+        ciphertext += encryptor.tag[:8]
 
         payload = {
             "v": 1,

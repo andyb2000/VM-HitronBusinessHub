@@ -7,10 +7,10 @@ name = "vmhub"
 version = "0.1.0"
 description = "Python client for Virgin Media Hub routers"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.7"
 dependencies = [
     "requests>=2.32",
-    "cryptography>=45.0",
+    "cryptography>=39.0,<45.0",
 ]
 
 [tool.pytest.ini_options]

@@ -1,2 +1,2 @@
 requests>=2.31,<2.32
-cryptography>=45.0
+cryptography>=39.0,<45.0

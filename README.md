@@ -291,7 +291,7 @@ These files are **not** modified or redistributed as part of the Python library 
 
 ## Requirements
 
-* Python 3.8+
+* Python 3.7+
 * requests 2.31.x (newer releases require newer Python versions)
 * cryptography
 
