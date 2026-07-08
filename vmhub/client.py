@@ -45,6 +45,9 @@ class VMHubClient(AuthMixin):
             gui_style=j.get("GuiStyle"),
         )
 
+    def is_authenticated(self) -> bool:
+        return bool(self.session.csrf or self.session.cookies.get("PHPSESSID"))
+
     def get(self, endpoint):
 
         r = self.session.get(

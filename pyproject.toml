@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vmhub"
+version = "0.1.0"
+description = "Python client for Virgin Media Hub routers"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32",
+    "cryptography>=45.0",
+    "quickjs>=1.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

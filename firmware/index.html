@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Common Router - Hitron Technologies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/docs.css" rel="stylesheet">
+    <link href="css/htx-bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/loading.css">
+    <link rel="stylesheet" type="text/css" href="css/loading-btn.css">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="lib/html5shim.js"></script>
+    <![endif]-->
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+    <!--[if IE 6]>
+        <link href="css/ie6.min.css" rel="stylesheet">
+    <![endif]-->
+</head>
+<body>
+    <div id="mainApp" class="hide">
+        <p class="hide" id="csrf_token">
+        </p>
+        <!--Navi bar-->
+        <div id="mainIndex_chita" class="container">
+            <!--Navi bar-->
+            <div class="span12">
+                <div class="masthead">
+                    <!-- top, contains logo and languageswitch -->
+                    <div class="top">
+                        <div class="logo">
+                        </div>
+                        <form class="language_switch">
+                        <label class="langTag" id="Admin_Language">
+                        </label>
+                        <select id="selLanguage">
+                            <option value="en_US">English</option>
+                            <option value="en_SPANISH">Español</option>
+                            <option value="en_DUTCH">Nederlands</option>
+                            <option value="en_GERMAN">Deutsch</option>
+                            <!-- <option value="en_TURKISH">Türkçe</option> -->
+                            <option value="en_FRENCH">Français</option>
+                            <option value="en_ITALIAN">Italiano</option>
+                            <option value="en_HUNGARIAN">Magyar</option>
+                            <option value="en_POLISH">Polski</option>
+                            <option value="en_ROMANIAN">Română</option>
+                            <option value="en_CZECH">Čeština</option>
+                            <option value="en_SLOVAK">Slovenčina</option>
+                        </select>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <span id="currentUser">User</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="logout" href="#" id="btnLogout">
+                                        Log Out
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="divider_battery"></li>
+                        <li class="dropdown" id="li_battery"></li>
+                        </form>
+                    </div>
+                    <!-- top navigation -->
+                    <ul class="navigationbar" id="topMenu">
+                        <li class="htx_slim_devider divider-vertical"></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="clear">
+                &nbsp;</div>
+            <div class="span3">
+                <!-- subnavigation -->
+                <ul class="subnav" id="submenus">
+                </ul>
+            </div>
+            <div class="span9">
+                <div id="menuTitle">
+                </div>
+                <div class="content_area" id="maincontent">
+                </div>
+                <div class="content_area_footer">
+                    &nbsp;</div>
+            </div>
+            <div class="clear">
+                &nbsp;</div>
+        </div>
+    </div>
+    <!--End of mainApp>
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="lib/json2.js"></script>
+    <script type="text/javascript" src="lib/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.hitronext.js"></script>
+    <script type="text/javascript" src="lib/underscore.min.js"></script>
+    <script type="text/javascript" src="lib/backbone.js"></script>
+    <script type="text/javascript" src="lib/bootstrap.min.js"></script>
+    <script type="text/javascript" src="extjs4/ext-all.js"></script>
+    <script type="text/javascript" src="lib/dict_chita.js"></script>
+    <script type="text/javascript" src="lib/hitronSync.js"></script>
+    <script type="text/javascript" src="js/mainApp.js"></script>
+    <script type="text/javascript" src="lib/Class.create.js"></script>
+    <script type="text/javascript" src="lib/jquery-encoder-0.1.0.js"></script>
+    <!--Templates-->
+    <script type="text/template" id="menuitem-template">
+        <a href="#<%= hyperLink %>/m/<%= index %>/s/<%= subIndex %>" >
+            <b><% print($.tag_get("Menu_" + langTagId)); %></b>
+        </a>
+    </script>
+    <script type="text/template" id="head-template">
+        <h1><% print($.tag_get("Title_" + langTagId)); %></h1>
+        <% if (!$.hitron.isChita()) { %>
+        <p class="lead"><% print($.tag_get("Subtitle_" + langTagId)); %></p>
+        <%}%>
+        <div class="subnav">
+            <ul class="nav nav-pills" id="submenus"></ul>
+        </div>
+    </script>
+    <script type="text/template" id="submenu-template">
+        <a href="#<%= hyperLink %>/m/<%= mainIndex%>/s/<%= index %>" <% if(selected==true) print("class='active'"); %>>
+            <% print($.tag_get(langTagId)); %>
+        </a>
+    </script>
+    <!--End of Templates-->
+    <!--script type="text/javascript" src="lib/ie6.min.js"></script-->
+</body>
+</html>

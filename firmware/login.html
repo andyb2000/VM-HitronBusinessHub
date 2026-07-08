@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="css/login.css" rel="stylesheet">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="lib/html5shim.js"></script>
+    <![endif]-->
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+    <script type="text/javascript" src="lib/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.hitronext.js"></script>
+    <!--script type="text/javascript" src="lib/dict.js"></script-->
+    <script type="text/javascript" src="lib/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/layer/layer.js"></script>
+    <script type="text/javascript" src="lib/sjcl.js"></script>
+    <script type="text/javascript" src="lib/encrypt-decrypt.js"></script>
+    <script type="text/javascript" language="javascript">
+        var skip_Wizard;
+        var user_type;
+        var DefFirstUrl;
+        var DefNormalUrl;
+        var modelName = "";
+
+        function userlogin() {
+            $(".alert").hide();
+            $("#btnLogin").button("loading");
+            if ($("#user_login").val() == "") {
+                $("#cg_username").addClass("error");
+                $("#btnLogin").button("reset");
+                return false;
+            }
+            else {
+                $("#cg_username").removeClass("error");
+            }
+
+            if ($("#user_password").val() == "") {
+                $("#cg_password").addClass("error");
+                $("#btnLogin").button("reset");
+                return false;
+            }
+            else {
+                $("#cg_password").removeClass("error");
+            }
+            //start submit the form
+            if ($("#user_remember_me").attr("checked") == "checked") {
+                setCookie("userName", $("#user_login").val(), 24 * 30, "/");
+                setCookie("password", $("#user_password").val(), 24 * 30, "/");
+            } else {
+                deleteCookie("userName", "/");
+                deleteCookie("password", "/");
+            }
+            if ($.hitron.isChita()) {
+                var data = '{"username":"' + escape($("#user_login").val()) + '", "password":"' + escape(doEncrypt($("#user_login").val(), $("#user_password").val())) + '", "forcelogin":"0"}';
+            } else {
+                var data = '{"username":"' + escape($("#user_login").val()) + '", "password":"' + escape($("#user_password").val()) + '"}';
+            }            
+            $.post("/1/Device/Users/Login", { model: data }, function (result, status) {
+                $("#btnLogin").button("reset");
+                result = $.parseJSON(result);
+                if (result.result != "success") {
+                    if ($.hitron.isChita()) {
+
+                            if(result.result == "repeatlogin") {
+                            
+                                layer.confirm($.tag_get("WarnMsg_Login_Force_Logoff_Tip"), {
+                                    btn: [$.tag_get("WarnMsg_Login_Force_Logoff"),$.tag_get("WarnMsg_Login_Exit")], 
+                                    skin: product_css,
+                                    area: ['700px','auto'],
+                                    closeBtn: false,
+                                    shade: [0], 
+                                    title: false,
+                                    shift: 1,
+                                }, function(){
+                                
+                                    /*click Force logoff, login again with forcelogoff=1*/
+                                    var index = layer.open();
+                                    
+                                    var data_force = '{"username":"' + escape($("#user_login").val()) + '", "password":"' + escape(doEncrypt($("#user_login").val(), $("#user_password").val())) + '", "forcelogin":"1"}';
+                                        
+                                    $.post("/1/Device/Users/Login", { model: data_force }, function (result, status) {
+                                        
+                                        $("#btnLogin").button("reset");
+                                        result = $.parseJSON(result);
+                                        if (result.result != "success") {
+
+                                            $("#Error_Unknown").html($.tag_get(result.result));
+                                            $(".alert").fadeIn(); 
+                                        } else {
+                                            $("#login").fadeOut(function () {
+                                                window.location = "index.html#status_system/m/1/s/1";
+                                            });
+                                        }
+                                    });
+                                    
+                                    layer.close(index);
+                                }, function(){
+                                    /*click Exit ,do nothing*/
+                                });                          
+                            
+                            } else {
+                                $("#Error_Unknown").html($.tag_get(result.result));
+                                $(".alert").fadeIn();
+                            }
+
+                    } else {
+                        $("#Error_Unknown").html($.tag_get(result.result));
+                        $(".alert").fadeIn();                    
+                    }
+                } else {
+                    $("#login").fadeOut(function () {
+                        window.location = "index.html#status_system/m/1/s/1";
+                    });
+                }
+            });
+        }
+        $(document).ready(function () {
+            $.getJSON("/1/Device/CM/Basicinfo", function (json) {
+                if ($.hitron.languages.lang_current == "fr_CA") {
+                    $("#Login_Title").css("font-size", "16px");
+                }
+                modelName = json.modelName;
+                setCookie("modelname", modelName, 24 * 30, "/");
+                var dict = "";
+                if ($.hitron.isChita()) {
+                    dict = "lib/dict_chita.js";
+                    $.hitron.addCssForChita(json);
+                    $("#loginWindow").remove();
+                    $("#footer").remove();
+                    if ("BLUE" == json.GuiStyle) { /* LGI */
+                        product_css = "layui-layer-upc";
+                    }
+                    else if ("RED" == json.GuiStyle) { /* VM */
+                        product_css = "layui-layer-vm";
+                    }
+                    else { /* other value configure BLUE */
+                        product_css = "layui-layer-upc";
+                    } 
+                }
+                else {
+                    dict = "lib/dict.js";
+                    $("#loginWindow_chita").remove();
+                }
+
+                $.get(dict, function () {
+                    $.hitron.languages.lang_init();
+                    $.hitron.languages.lang_load();
+                    $("#selLanguage").val($.hitron.languages.lang_current);
+
+                    $("#btnLogin").attr("data-loading-text", $.tag_get("Login"));
+                    $("#user_login").attr("placeholder", $.tag_get("Username_Placeholder"));
+                    $("#user_password").attr("placeholder", $.tag_get("Password_Placeholder"));
+                    document.title = modelName + " " + $.tag_get("Login_Title");
+                    $("#Login_Title").html(modelName + "<span> " + $.tag_get("Login") + "</span>");
+
+                    if (!$.hitron.isChita()) {
+                        var date, year;
+                        date = new Date();
+                        year = date.getFullYear();
+                        $("#copyright").html("&copy " + year + " " + $.tag_get("Copyright"));
+                    }
+                    //Login button function
+                    $("#btnLogin").click(function () {
+                        userlogin();
+                    });
+                    $("#user_password").keydown(function (event) {
+                        if (event.which == 13)
+                            userlogin();
+                    });
+                    //close alert
+                    $("#btnCloseAlert").click(function () {
+                        $(".alert").fadeOut();
+                    });
+
+                    $("#selLanguage").change(function () {
+                        //console.log($("#selLanguage").val());
+                        $.hitron.languages.lang_set($("#selLanguage").val());
+                    });
+
+                    var userNameValue = getCookieValue("userName");
+                    $("#user_login").val(userNameValue);
+                    var userNameValue = getCookieValue("password");
+                    $("#user_password").val(userNameValue);
+                    if (userNameValue != "") {
+                        $("#user_remember_me").attr("checked", true);
+                    } else {
+                        $("#user_remember_me").attr("checked", false);
+                    }
+
+                    $("#login").fadeIn("slow");
+                });
+            }).done(function (data) {
+                if (data) {
+                    if (data.errMsg == "redirect" && data.redirectUrl) {
+                        if (data.redirectUrl.substr(0, 4) != "http")
+                            data.redirectUrl = "http://" + data.redirectUrl;
+                        location.assign(data.redirectUrl);
+                    }
+                }
+            });
+
+        });
+    </script>
+</head>
+<body>
+    <div class="container hide" id="login">
+        <span class="hide">RedirectLoginIdentify</span><!-- For identfying session timeout event for Backbone.js -->
+        <div style="width: auto !important; width: 410px; max-width: 410px; margin: auto;
+            height: auto !important; height: 410px; min-height: 410px;" id="loginWindow">
+            <div class="section section-large" id="login-section">
+                <div class="section-header section-header-black" large="large">
+                    <div style="float: right;">
+                        <img class="logo" src="img/logo_small.png"></img>
+                    </div>
+                    <h3 id="Login_Title">
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <div class="row-fluid">
+                        <div class="control-group" style="margin-bottom: 0px;" id="cg_username">
+                            <label for="user_login" class="langTag" id="Username">
+                            </label>
+                            <div class="controls">
+                                <input class="input-xlarge" id="user_login" name="user[login]" maxlength="127" type="text"
+                                    autocapitalize="off" autocorrect="off" />
+                            </div>
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0px" id="cg_password">
+                            <label for="user_password" class="langTag" id="Password">
+                            </label>
+                            <input class="input-xlarge" id="user_password" name="user[password]" maxlength="63"
+                                type="password" autocapitalize="off" autocorrect="off" />
+                        </div>
+                        <div>
+                            <label class="langTag" id="Language">
+                            </label>
+                            <select id="selLanguage" style="width: 280px">
+                                <option value="en_US">English</option>
+                                <option class="langTag" id="French" value="fr_CA"></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-foot">
+                    <div class="row-fluid">
+                        <div class="span4">
+                            <button class="btn btn-primary" name="commit" type="button" value="Login" id="btnLogin">
+                                <span class="langTag" id="Login"></span>
+                            </button>
+                        </div>
+                        <div class="span8" style="padding-top: 5px">
+                            <label class="checkbox" for="user_remember_me">
+                                <input name="user[remember_me]" type="hidden" value="0" />
+                                <input id="user_remember_me" name="user[remember_me]" type="checkbox" style="margin-top: -1px\9;"
+                                    value="1" />
+                                <span class="langTag" id="Login_RememberMe"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="alert alert-block alert-error fade in" style="display: none">
+                <a class="close" href="#" id="btnCloseAlert">
+                    &times;</a>
+                <h4 class="langTag" id="Login_Failed">
+                </h4>
+                <p>
+                    <span class="langTag" id="Error_Unknown"></span>
+                </p>
+            </div>
+        </div>
+        <div id="loginWindow_chita">
+            <div class="span12">
+                <div class="masthead">
+                    <!-- top, contains logo and languageswitch -->
+                    <div class="top">
+                        <div class="logo">
+                        </div>
+                        <form class="language_switch">
+                        <label class="langTag" id="Admin_Language">
+                        </label>
+                        <select id="selLanguage">
+                            <option value="en_US">English</option>
+                            <option value="en_SPANISH">Español</option>
+                            <option value="en_DUTCH">Nederlands</option>
+                            <option value="en_GERMAN">Deutsch</option>
+                            <!-- <option value="en_TURKISH">Türkçe</option> -->
+                            <option value="en_FRENCH">Français</option>
+                            <option value="en_ITALIAN">Italiano</option>
+                            <option value="en_HUNGARIAN">Magyar</option>
+                            <option value="en_POLISH">Polski</option>
+                            <option value="en_ROMANIAN">Română</option>
+                            <option value="en_CZECH">Čeština</option>
+                            <option value="en_SLOVAK">Slovenčina</option>
+                        </select>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="clear">
+                &nbsp;</div>
+            <div class="grid_6" id="login_area">
+                <h1 class="langTag" id="Login_Title_Page">
+                </h1>
+                <div class='login_content_area'>
+                    <h2 class="langTag" id="Login_Title_Container">
+                    </h2>
+                    <div class="alert alert-block alert-error fade in" style="display: none">
+                        <a class="close" href="#" id="btnCloseAlert">
+                            &times;</a>
+                        <h4 class="langTag" id="Login_Failed">
+                        </h4>
+                        <p>
+                            <span class="langTag" id="Error_Unknown"></span>
+                        </p>
+                    </div>
+                    <div class="control-group" id="cg_username">
+                        <label for="user_login" class="langTag" id="Username">
+                        </label>
+                        <input class="input-xlarge" id="user_login" name="user[login]" maxlength="128" type="text" />
+                    </div>
+                    <div class="clear">
+                        &nbsp;</div>
+                    <div class="control-group" id="cg_password">
+                        <label for="user_password" class="langTag" id="Password">
+                        </label>
+                        <input class="input-xlarge" id="user_password" name="user[password]" maxlength="63"
+                            type="password" autocapitalize="off" autocorrect="off" />
+                    </div>
+                    <div>
+                    </div>
+                    <div class="clear">
+                        &nbsp;</div>
+                    <button class="btn btn-primary" name="commit" type="button" value="Login" id="btnLogin">
+                        <span class="langTag" id="Login"></span>
+                    </button>
+                </div>
+                <div class="login_content_footer">
+                    &nbsp;</div>
+            </div>
+        </div>
+        <div class="footer" id="footer">
+            <center>
+                <p id="copyright">
+                </p>
+            </center>
+        </div>
+    </div>
+</body>
+</html>
