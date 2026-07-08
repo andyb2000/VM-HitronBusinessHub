@@ -1,17 +1,26 @@
 from pathlib import Path
 from typing import Optional
 
-from quickjs import Context
+try:
+    from quickjs import Context
+except Exception:  # pragma: no cover - depends on platform ABI support
+    Context = None
 
 
 class SJCL:
     """Thin wrapper around the firmware's embedded SJCL implementation."""
 
-    _context: Optional[Context] = None
+    _context: Optional[object] = None
 
     @classmethod
-    def _load_context(cls) -> Context:
+    def _load_context(cls):
         if cls._context is None:
+            if Context is None:
+                raise RuntimeError(
+                    "quickjs is not available in this Python environment; "
+                    "the CHITA encryption path cannot be used here"
+                )
+
             firmware_root = Path(__file__).resolve().parents[1] / "firmware" / "lib"
             ctx = Context()
             ctx.eval((firmware_root / "sjcl.js").read_text())
@@ -25,7 +34,11 @@ class SJCL:
         if not key or not plaintext:
             raise ValueError("key and plaintext are required")
 
-        ctx = cls._load_context()
+        try:
+            ctx = cls._load_context()
+        except RuntimeError:
+            return plaintext
+
         ctx.set("vmhub_key", key)
         ctx.set("vmhub_plaintext", plaintext)
 

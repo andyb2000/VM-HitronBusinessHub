@@ -31,6 +31,8 @@ If you prefer the modern packaging flow, you can also install the project in edi
 pip install -e .
 ```
 
+If the machine cannot import the native `quickjs` package (for example on older ARM devices), the library will fall back to using the plain password string for the login flow. This is useful for testing or for routers that do not require the CHITA encryption path, but the full encrypted login flow may not work on that host.
+
 To run the sample login example:
 
 ```bash

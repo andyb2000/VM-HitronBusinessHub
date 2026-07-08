@@ -1,3 +1,4 @@
+import requests
 import requests.sessions
 
 from vmhub import VMHub
@@ -20,13 +21,12 @@ def test_session_uses_single_attempt_and_default_timeout(monkeypatch) -> None:
     captured = {}
 
     def fake_request(self, method, url, **kwargs):
-        captured["timeout"] = kwargs.get("timeout")
-        response = requests.sessions.Response()
-        response.status_code = 200
-        response._content = b"{}"
-        response.url = url
-        return response
-
+            captured["timeout"] = kwargs.get("timeout")
+            response = requests.Response()
+            response.status_code = 200
+            response._content = b"{}"
+            response.url = url
+            return response
     monkeypatch.setattr(requests.sessions.Session, "request", fake_request)
 
     hub.session.get("https://example.com")
