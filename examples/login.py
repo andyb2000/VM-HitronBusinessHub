@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import requests
+
 from vmhub import VMHub
 from vmhub.crypto import SJCL
 from vmhub.exceptions import AuthenticationError
@@ -20,15 +22,19 @@ def main() -> int:
     parser.add_argument("--username", default=os.getenv("VMHUB_USERNAME", "admin"), help="Router username")
     parser.add_argument("--password", default=os.getenv("VMHUB_PASSWORD", ""), help="Router password")
     parser.add_argument("--https", action="store_true", help="Use HTTPS instead of HTTP")
+    parser.add_argument("--verbose", action="store_true", help="Print the detailed login request and response information")
     args = parser.parse_args()
 
     if not args.password:
         parser.error("a password is required, either via --password or the VMHUB_PASSWORD environment variable")
 
-    client = VMHub(host=args.host, username=args.username, password=args.password, https=args.https)
+    client = VMHub(host=args.host, username=args.username, password=args.password, https=args.https, verbose=args.verbose)
 
     try:
-        client.login()
+        client.login(verbose=args.verbose)
+    except requests.exceptions.RequestException as exc:
+        print(f"Connection failed: {exc}")
+        return 1
     except AuthenticationError as exc:
         print(f"Authentication failed: {exc}")
         return 1

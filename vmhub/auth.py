@@ -3,6 +3,11 @@ from urllib.parse import quote
 from .exceptions import AuthenticationError
 
 
+def _debug_print(message: str, verbose: bool = False) -> None:
+    if verbose:
+        print(message)
+
+
 class AuthMixin:
 
     def _build_login_payload(self, password: str, is_chita: bool) -> str:
@@ -19,9 +24,10 @@ class AuthMixin:
 
         return "{" + ", ".join(escaped_pairs) + "}"
 
-    def login(self):
+    def login(self, verbose: bool = False):
 
         info = self.router_info()
+        _debug_print(f"Router model: {info.model}", verbose)
 
         password = self.password
         is_chita = info.model.upper().startswith("CHITA")
@@ -33,15 +39,25 @@ class AuthMixin:
                 self.username,
                 self.password,
             )
+            _debug_print("Used CHITA password encryption", verbose)
+        else:
+            _debug_print("CHITA encryption not used for this router", verbose)
 
         payload = self._build_login_payload(password, is_chita)
+        _debug_print(f"Login payload: {payload}", verbose)
 
         r = self.session.post(
             self.url("/1/Device/Users/Login"),
             data={"model": payload},
         )
 
-        reply = r.json()
+        _debug_print(f"Login response status: {r.status_code}", verbose)
+        _debug_print(f"Login response body: {r.text}", verbose)
+
+        try:
+            reply = r.json()
+        except ValueError:
+            reply = {}
 
         if reply.get("result") != "success":
             raise AuthenticationError(reply.get("result", "login failed"))

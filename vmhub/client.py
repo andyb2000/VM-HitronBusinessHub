@@ -13,6 +13,7 @@ class VMHubClient(AuthMixin):
         username,
         password,
         https=False,
+        verbose=False,
     ):
 
         proto = "https" if https else "http"
@@ -21,6 +22,7 @@ class VMHubClient(AuthMixin):
 
         self.username = username
         self.password = password
+        self.verbose = verbose
 
         self.session = VMHubSession()
 
@@ -38,6 +40,10 @@ class VMHubClient(AuthMixin):
             self.url("/1/Device/CM/Basicinfo")
         )
 
+        if self.verbose:
+            print(f"Basicinfo status: {r.status_code}")
+            print(f"Basicinfo body: {r.text}")
+
         j = r.json()
 
         return RouterInfo(
@@ -47,6 +53,11 @@ class VMHubClient(AuthMixin):
 
     def is_authenticated(self) -> bool:
         return bool(self.session.csrf or self.session.cookies.get("PHPSESSID"))
+
+    def login(self, verbose: bool = None):
+        if verbose is None:
+            verbose = self.verbose
+        return super().login(verbose=verbose)
 
     def get(self, endpoint):
 
