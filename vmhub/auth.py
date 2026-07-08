@@ -10,11 +10,11 @@ def _debug_print(message: str, verbose: bool = False) -> None:
 
 class AuthMixin:
 
-    def _build_login_payload(self, password: str, is_chita: bool) -> str:
+    def _build_login_payload(self, password: str, is_chita: bool, force_login: bool = False) -> str:
         values = {
             "username": self.username,
             "password": password,
-            "forcelogin": "0" if is_chita else "1",
+            "forcelogin": "1" if force_login else "0" if is_chita else "1",
         }
 
         escaped_pairs = []
@@ -43,28 +43,38 @@ class AuthMixin:
         else:
             _debug_print("CHITA encryption not used for this router", verbose)
 
-        payload = self._build_login_payload(password, is_chita)
-        _debug_print(f"Login payload: {payload}", verbose)
+        for force_login in (False, True):
+            payload = self._build_login_payload(password, is_chita, force_login=force_login)
+            _debug_print(f"Login payload: {payload}", verbose)
 
-        r = self.session.post(
-            self.url("/1/Device/Users/Login"),
-            data={"model": payload},
-        )
+            r = self.session.post(
+                self.url("/1/Device/Users/Login"),
+                data={"model": payload},
+            )
 
-        _debug_print(f"Login response status: {r.status_code}", verbose)
-        _debug_print(f"Login response body: {r.text}", verbose)
+            _debug_print(f"Login response status: {r.status_code}", verbose)
+            _debug_print(f"Login response body: {r.text}", verbose)
 
-        try:
-            reply = r.json()
-        except ValueError:
-            reply = {}
+            try:
+                reply = r.json()
+            except ValueError:
+                reply = {}
 
-        if reply.get("result") != "success":
-            raise AuthenticationError(reply.get("result", "login failed"))
+            if reply.get("result") == "success":
+                self.get_csrf()
+                return True
 
-        self.get_csrf()
+            if reply.get("result") == "repeatlogin" and not force_login:
+                _debug_print("Router reported repeatlogin; attempting logout and retry with force-login", verbose)
+                try:
+                    self.logout()
+                except Exception:
+                    pass
+                continue
 
-        return True
+            break
+
+        raise AuthenticationError(reply.get("result", "login failed"))
 
     def logout(self):
 

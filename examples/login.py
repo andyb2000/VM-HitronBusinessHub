@@ -36,6 +36,8 @@ def main() -> int:
             return 1
         except AuthenticationError as exc:
             print(f"Authentication failed: {exc}")
+            if str(exc) == "repeatlogin":
+                print("Hint: the router is still holding an active session. A logout or force-login action may be required on the router GUI.")
             return 1
 
         print("Login successful.")

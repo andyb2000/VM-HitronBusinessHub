@@ -101,6 +101,12 @@ Known implementation details include:
 * Add router status, WAN, DHCP, and wireless configuration support.
 * Improve docs and add more end-to-end examples.
 
+### Repeat-login workaround
+
+If the router responds with `result: "repeatlogin"`, it means an earlier session is still active and the router is refusing a new login until that session is cleared. The library now attempts an automatic logout and a second login attempt with force-login semantics to recover from this state.
+
+If the router still refuses the login, the user may need to manually clear the previous session from the router GUI or trigger the GUI's force-login option.
+
 ---
 
 ## Planned Features
