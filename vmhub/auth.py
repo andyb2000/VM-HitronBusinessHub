@@ -67,9 +67,13 @@ class AuthMixin:
             if reply.get("result") == "repeatlogin" and not force_login:
                 _debug_print("Router reported repeatlogin; attempting logout and retry with force-login", verbose)
                 try:
-                    self.logout()
-                except Exception:
-                    pass
+                    logout_response = self.logout()
+                    if verbose:
+                        print(f"Logout response status: {logout_response.status_code}")
+                        print(f"Logout response body: {logout_response.text}")
+                except Exception as exc:
+                    if verbose:
+                        print(f"Logout request failed: {exc}")
                 continue
 
             break
@@ -78,7 +82,7 @@ class AuthMixin:
 
     def logout(self):
 
-        self.session.post(
+        return self.session.post(
             self.url("/1/Device/Users/Logout")
         )
 
