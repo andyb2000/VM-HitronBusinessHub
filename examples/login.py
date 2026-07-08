@@ -10,6 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from vmhub import VMHub
+from vmhub.crypto import SJCL
 from vmhub.exceptions import AuthenticationError
 
 
@@ -35,6 +36,8 @@ def main() -> int:
     print("Login successful.")
     print(f"Authenticated: {client.is_authenticated()}")
     print(f"CSRF token: {client.session.csrf}")
+    if getattr(SJCL, "_context", None) is None:
+        print("Note: the CHITA encryption path is unavailable; the login used the fallback behavior.")
     return 0
 
 
