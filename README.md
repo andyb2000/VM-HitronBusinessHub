@@ -31,7 +31,7 @@ If you prefer the modern packaging flow, you can also install the project in edi
 pip install -e .
 ```
 
-If the machine cannot import the native `quickjs` package (for example on older ARM devices), the library will fall back to using the plain password string for the login flow. This is useful for testing or for routers that do not require the CHITA encryption path, but the full encrypted login flow may not work on that host.
+The CHITA login flow now uses a pure-Python SJCL-compatible implementation, so no native `quickjs` runtime is required. This keeps the sample login flow working on systems where the browser-side JavaScript runtime is unavailable or ABI-incompatible.
 
 To run the sample login example:
 
@@ -293,7 +293,7 @@ These files are **not** modified or redistributed as part of the Python library 
 
 * Python 3.8+
 * requests 2.31.x (newer releases require newer Python versions)
-* quickjs
+* cryptography
 
 ---
 

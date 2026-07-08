@@ -11,7 +11,6 @@ requires-python = ">=3.8"
 dependencies = [
     "requests>=2.32",
     "cryptography>=45.0",
-    "quickjs>=1.0.0",
 ]
 
 [tool.pytest.ini_options]
