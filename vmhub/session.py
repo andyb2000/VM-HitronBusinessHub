@@ -28,3 +28,7 @@ class VMHubSession(requests.Session):
     def request(self, method, url, **kwargs):
         kwargs.setdefault("timeout", self.timeout)
         return super().request(method, url, **kwargs)
+
+    def close(self):
+        self.csrf = None
+        super().close()

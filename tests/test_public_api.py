@@ -32,3 +32,23 @@ def test_session_uses_single_attempt_and_default_timeout(monkeypatch) -> None:
     hub.session.get("https://example.com")
 
     assert captured["timeout"] == 20
+
+
+def test_client_close_logs_out_and_closes_session(monkeypatch) -> None:
+    hub = VMHub(host="192.168.0.1", username="admin", password="password")
+    hub.session._logout_on_close = True
+
+    calls = []
+
+    def fake_logout() -> None:
+        calls.append("logout")
+
+    def fake_session_close() -> None:
+        calls.append("session-close")
+
+    monkeypatch.setattr(hub, "logout", fake_logout)
+    monkeypatch.setattr(hub.session, "close", fake_session_close)
+
+    hub.close()
+
+    assert calls == ["logout", "session-close"]

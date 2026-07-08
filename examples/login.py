@@ -28,22 +28,21 @@ def main() -> int:
     if not args.password:
         parser.error("a password is required, either via --password or the VMHUB_PASSWORD environment variable")
 
-    client = VMHub(host=args.host, username=args.username, password=args.password, https=args.https, verbose=args.verbose)
+    with VMHub(host=args.host, username=args.username, password=args.password, https=args.https, verbose=args.verbose) as client:
+        try:
+            client.login(verbose=args.verbose)
+        except requests.exceptions.RequestException as exc:
+            print(f"Connection failed: {exc}")
+            return 1
+        except AuthenticationError as exc:
+            print(f"Authentication failed: {exc}")
+            return 1
 
-    try:
-        client.login(verbose=args.verbose)
-    except requests.exceptions.RequestException as exc:
-        print(f"Connection failed: {exc}")
-        return 1
-    except AuthenticationError as exc:
-        print(f"Authentication failed: {exc}")
-        return 1
-
-    print("Login successful.")
-    print(f"Authenticated: {client.is_authenticated()}")
-    print(f"CSRF token: {client.session.csrf}")
-    if getattr(SJCL, "_context", None) is None:
-        print("Note: the CHITA encryption path is unavailable; the login used the fallback behavior.")
+        print("Login successful.")
+        print(f"Authenticated: {client.is_authenticated()}")
+        print(f"CSRF token: {client.session.csrf}")
+        if getattr(SJCL, "_context", None) is None:
+            print("Note: the CHITA encryption path is unavailable; the login used the fallback behavior.")
     return 0
 
 

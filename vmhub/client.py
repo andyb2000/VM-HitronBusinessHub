@@ -1,3 +1,4 @@
+import atexit
 import json
 
 from .session import VMHubSession
@@ -25,10 +26,15 @@ class VMHubClient(AuthMixin):
         self.verbose = verbose
 
         self.session = VMHubSession()
+        self._closed = False
+        self._should_logout = False
+        self.session._logout_on_close = False
 
         self.session.headers["Referer"] = (
             self.base + "/webpages/index.html"
         )
+
+        atexit.register(self.close)
 
     def url(self, path):
 
@@ -57,7 +63,44 @@ class VMHubClient(AuthMixin):
     def login(self, verbose: bool = None):
         if verbose is None:
             verbose = self.verbose
-        return super().login(verbose=verbose)
+
+        result = super().login(verbose=verbose)
+        self._should_logout = True
+        self.session._logout_on_close = True
+        return result
+
+    def close(self):
+        if getattr(self, "_closed", False):
+            return
+
+        self._closed = True
+
+        if self._should_logout or getattr(self.session, "_logout_on_close", False):
+            try:
+                self.logout()
+            except Exception:
+                pass
+            finally:
+                self._should_logout = False
+                self.session._logout_on_close = False
+
+        try:
+            self.session.close()
+        except Exception:
+            pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
 
     def get(self, endpoint):
 
