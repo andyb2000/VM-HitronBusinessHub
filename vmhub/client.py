@@ -69,7 +69,10 @@ class VMHubClient(AuthMixin):
         self.session._logout_on_close = True
         return result
 
-    def close(self):
+    def close(self, verbose: bool = None):
+        if verbose is None:
+            verbose = self.verbose
+
         if getattr(self, "_closed", False):
             return
 
@@ -77,7 +80,7 @@ class VMHubClient(AuthMixin):
 
         if self._should_logout or getattr(self.session, "_logout_on_close", False):
             try:
-                self.logout()
+                self.logout(verbose=verbose)
             except Exception:
                 pass
             finally:
