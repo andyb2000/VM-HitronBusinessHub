@@ -81,11 +81,11 @@ class AuthMixin:
         raise AuthenticationError(reply.get("result", "login failed"))
 
     def logout(self, verbose: bool = False):
-            r = self.session.post(
-                self.url("/1/Device/Users/Logout")
-            )
-            _debug_print(f"Logout response status: {r.status_code}", verbose)
-            _debug_print(f"Logout response body: {r.text}", verbose)
+        r = self.session.post(
+            self.url("/1/Device/Users/Logout")
+        )
+        _debug_print(f"Logout response status: {r.status_code}", verbose)
+        _debug_print(f"Logout response body: {r.text}", verbose)
 
         return r
 
