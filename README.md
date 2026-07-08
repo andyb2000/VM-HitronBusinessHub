@@ -80,6 +80,27 @@ Known implementation details include:
 * A CSRF token must subsequently be obtained from `/1/Device/Users/CSRF`.
 * Future API requests include the CSRF token alongside request payloads.
 
+## Changelog / Progress
+
+* 2026-07-08: Added a working CHITA-compatible login flow, including password encryption and authenticated session handling.
+* 2026-07-08: Implemented a pure-Python SJCL-compatible AES-GCM path that avoids the native `quickjs` dependency.
+* 2026-07-08: Added verbose login debugging output and improved session timeout/retry behavior.
+* 2026-07-08: Added a runnable example script at `examples/login.py` and accompanying regression tests.
+* 2026-07-08: Confirmed successful router login and CSRF token retrieval in test runs.
+
+### Working Today
+
+* CHITA login works with encrypted password payloads.
+* Router authentication returns `result: "success"` and issues a CSRF token.
+* Python 3.7+ compatibility is supported.
+* Environments without a native JS runtime can still exercise the login path through the fallback.
+
+### Next steps
+
+* Expand endpoint coverage beyond authentication.
+* Add router status, WAN, DHCP, and wireless configuration support.
+* Improve docs and add more end-to-end examples.
+
 ---
 
 ## Planned Features
